@@ -8,13 +8,6 @@ __pycache__/
 
 # Run results
 res/
-runs/
-wandb/
-
-# lightning logs
-src/benchmarks/c51/lightning_logs
-src/benchmarks/c51/wandb
-src/benchmarks/c51/DRL-c51
 
 # Distribution / packaging
 .Python
