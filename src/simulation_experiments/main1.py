@@ -15,8 +15,12 @@ import logging
 
 import numpy as np
 
+import scipy.linalg
+
 from distutils.util import strtobool
-from multiprocessing import cpu_count, Process, shared_memory
+from multiprocessing import cpu_count, shared_memory
+from multiprocessing import Process
+from deeptime.markov.tools.analysis import stationary_distribution
 
 sys.path.append(r"../..")
 
