@@ -2,19 +2,19 @@
 # @Time    : 2023/5/12 22:41
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/_logger/_get_logger.py
+# @File    : src/logger/_get_logger.py
 # @Software: PyCharm
 
 import datetime as _datetime
 import logging as _logging
 import pytz as _pytz
-# import tzlocal as _tzlocal
 
 from typing import Optional
 from tzlocal import get_localzone_name
 
 from ._logging import _get_logger
-from . import FmtRegex
+
+FmtRegex = "[%(levelname)s] [%(asctime)s] %(message)s - %(filename)s:%(lineno)s"
 
 
 def converter(timestamp):

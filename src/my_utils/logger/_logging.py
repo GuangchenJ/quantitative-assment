@@ -18,7 +18,7 @@
 # @Time    : 2023/5/12 23:43 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/_logger/_logging.py
+# @File    : src/logger/_logging.py
 # @Software: PyCharm
 
 from typing import Optional
