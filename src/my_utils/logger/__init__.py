@@ -9,8 +9,9 @@
 FmtRegex = "[%(levelname)s] [%(asctime)s] %(message)s - %(filename)s:%(lineno)s"
 
 from ._get_logger import get_logger
+from ._matching_logger_level import _matching_logger_level
 
-__all__ = ["get_logger"]
+__all__ = ["get_logger", "_matching_logger_level"]
 
 __author__ = "Guangchen Jiang <guangchen98.jiang@gmail.com>"
 __status__ = "test"
