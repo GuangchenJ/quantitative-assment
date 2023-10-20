@@ -153,74 +153,11 @@ def cooperates(_k: int,
     assessments = np.array([L8ASSESSMENTS[_sys_args.leading8idx], np.ones(8) if _idx else np.zeros(8)]).astype(np.int32)
     actions = np.array([L8ACTIONS[_sys_args.leading8idx], np.ones(4) if _idx else np.zeros(4)]).astype(np.int32)
     strategies_array = np.concatenate((np.zeros(_k), np.ones(_args["population size"] - _k))).astype(np.int32)
-    image_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.int32)
-    cooperate_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.float64)
-    interact_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.float64)
-    avg_image_matrix = image_matrix.astype(np.float64)
-    for _i in range(_args["total round"]):
-        # donor acts according to his reputation repository (his row of image matrix)
-        donor, receiver = np.array(random.sample(range(0, _args["population size"] - 1), 2), np.int32)
-        donor_act = actions[strategies_array[donor]]
-        reputation_donor_score = image_matrix[donor][donor]
-        reputation_receiver_score = image_matrix[donor][receiver]
-        reputation_donor = score2rep(reputation_donor_score, _args["score threshold"])
-        reputation_receiver = score2rep(reputation_receiver_score, _args["score threshold"])
-        action = donor_act[(np.int32(1) - reputation_donor) * np.int32(2) + (np.int32(1) - reputation_receiver)]
-        # updating observers opinions
-        for _j in np.arange(_args["population size"], dtype=np.int32):
-            if (_j == donor) or (_j == receiver) or (random.random() < _args["observation probability"]):
-                obs_assessment = assessments[strategies_array[_j]]
-                rep_donor_obs = score2rep(image_matrix[_j][donor], _args["score threshold"])
-                rep_receiver_obs = score2rep(image_matrix[_j][receiver], _args["score threshold"])
-                obs_asmt = obs_assessment[
-                    (1 - action) * 4 + (1 - rep_donor_obs) * 2 + (1 - rep_receiver_obs)
-                    if random.random() < (1 - _args["error rate"]) else
-                    action * 4 + (1 - rep_donor_obs) * 2 + (1 - rep_receiver_obs)
-                ]
-                image_matrix[_j][donor] = np.clip(
-                    image_matrix[_j][donor] + 1 if obs_asmt else -1,
-                    _min_level, _max_level
-                )
-        # after burn in time, start recording cooperative actions and total number of interactions
-        if _i > _args["burn in time"]:
-            cooperate_matrix[donor][receiver] += action
-            interact_matrix[donor][receiver] += 1
-            if _i == _args["burn in time"] + 1:
-                avg_image_matrix = image_matrix.astype(np.float64)
-            else:
-                avg_image_matrix = np.float64(_i - _args["burn in time"] - 1.) / np.float64(
-                    _i - _args["burn in time"]) * avg_image_matrix + np.float64(1.) / np.float64(
-                    _i - _args["burn in time"]) * image_matrix.astype(np.float64)
-
-    cooperate_matrix_means = np.zeros((strategies_num, strategies_num), dtype=np.float64)
-    strategies_matrix_means = np.zeros((strategies_num, strategies_num), dtype=np.float64)
-
-    for _i in np.arange(strategies_num, dtype=np.int32):
-        for _j in np.arange(strategies_num, dtype=np.int32):
-            if _i != _j:
-                strategies_matrix_means[_i, _j] = np.mean(np.mean(
-                    avg_image_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
-                cooperate_matrix_means[_i, _j] = np.sum(np.sum(
-                    cooperate_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                )) / np.sum(np.sum(
-                    interact_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
-            elif (strategy_players_i := np.nonzero(strategies_array == _i)[0]).shape[0] > 1:
-                strategy_players_j = np.where(strategies_array == _j)[0]
-                strategies_matrix_means[_i, _j] = np.mean([
-                    avg_image_matrix[x, y] for x in strategy_players_i for y in strategy_players_j if x != y
-                ])
-                cooperate_matrix_means[_i, _j] = np.sum(np.sum(
-                    cooperate_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                )) / np.sum(np.sum(
-                    interact_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
+    cooperate_matrix_means = dynamic_step(
+        _min_level, _max_level,
+        strategies_num, actions, strategies_array,
+        assessments, _args, _sys_args
+    )
 
     # return average pairwise cooperation rate of the four possible strategy combinations
     # for this population composition
@@ -241,74 +178,11 @@ def cooperates_homogeneous(_min_level: int,
     assessments = np.array([L8ASSESSMENTS[_sys_args.leading8idx], np.ones(8)]).astype(np.int32)
     actions = np.array([L8ACTIONS[_sys_args.leading8idx], np.ones(4)]).astype(np.int32)
     strategies_array = np.concatenate((np.ones(_args["population size"] - 1), np.zeros(1))).astype(np.int32)
-    image_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.int32)
-    cooperate_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.float64)
-    interact_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.float64)
-    avg_image_matrix = image_matrix.astype(np.float64)
-    for _i in range(_args["total round"]):
-        # donor acts according to his reputation repository (his row of image matrix)
-        donor, receiver = np.array(random.sample(range(0, _args["population size"] - 1), 2), np.int32)
-        donor_act = actions[strategies_array[donor]]
-        reputation_donor_score = image_matrix[donor][donor]
-        reputation_receiver_score = image_matrix[donor][receiver]
-        reputation_donor = score2rep(reputation_donor_score, _args["score threshold"])
-        reputation_receiver = score2rep(reputation_receiver_score, _args["score threshold"])
-        action = donor_act[(np.int32(1) - reputation_donor) * np.int32(2) + (np.int32(1) - reputation_receiver)]
-        # updating observers opinions
-        for _j in np.arange(_args["population size"], dtype=np.int32):
-            if (_j == donor) or (_j == receiver) or (random.random() < _args["observation probability"]):
-                obs_assessment = assessments[strategies_array[_j]]
-                rep_donor_obs = score2rep(image_matrix[_j][donor], _args["score threshold"])
-                rep_receiver_obs = score2rep(image_matrix[_j][receiver], _args["score threshold"])
-                obs_asmt = obs_assessment[
-                    (1 - action) * 4 + (1 - rep_donor_obs) * 2 + (1 - rep_receiver_obs)
-                    if random.random() < (1 - _args["error rate"]) else
-                    action * 4 + (1 - rep_donor_obs) * 2 + (1 - rep_receiver_obs)
-                ]
-                image_matrix[_j][donor] = np.clip(
-                    image_matrix[_j][donor] + 1 if obs_asmt else -1,
-                    _min_level, _max_level
-                )
-        # after burn in time, start recording cooperative actions and total number of interactions
-        if _i > _args["burn in time"]:
-            cooperate_matrix[donor][receiver] += action
-            interact_matrix[donor][receiver] += 1
-            if _i == _args["burn in time"] + 1:
-                avg_image_matrix = image_matrix.astype(np.float64)
-            else:
-                avg_image_matrix = np.float64(_i - _args["burn in time"] - 1.) / np.float64(
-                    _i - _args["burn in time"]) * avg_image_matrix + np.float64(1.) / np.float64(
-                    _i - _args["burn in time"]) * image_matrix.astype(np.float64)
-
-    cooperate_matrix_means = np.zeros((strategies_num, strategies_num), dtype=np.float64)
-    strategies_matrix_means = np.zeros((strategies_num, strategies_num), dtype=np.float64)
-
-    for _i in np.arange(strategies_num, dtype=np.int32):
-        for _j in np.arange(strategies_num, dtype=np.int32):
-            if _i != _j:
-                strategies_matrix_means[_i, _j] = np.mean(np.mean(
-                    avg_image_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
-                cooperate_matrix_means[_i, _j] = np.sum(np.sum(
-                    cooperate_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                )) / np.sum(np.sum(
-                    interact_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
-            elif (strategy_players_i := np.nonzero(strategies_array == _i)[0]).shape[0] > 1:
-                strategy_players_j = np.where(strategies_array == _j)[0]
-                strategies_matrix_means[_i, _j] = np.mean([
-                    avg_image_matrix[x, y] for x in strategy_players_i for y in strategy_players_j if x != y
-                ])
-                cooperate_matrix_means[_i, _j] = np.sum(np.sum(
-                    cooperate_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                )) / np.sum(np.sum(
-                    interact_matrix[_i == strategies_array],
-                    where=[_j == strategies_array], axis=1
-                ))
+    cooperate_matrix_means = dynamic_step(
+        _min_level, _max_level,
+        strategies_num, actions, strategies_array,
+        assessments, _args, _sys_args
+    )
 
     return cooperate_matrix_means[0, 0]
 

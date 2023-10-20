@@ -1,11 +1,12 @@
 # config.yaml
 
+judgment threshold: 5
 total round: 2000000
 burn in time: 500000
 population size: 50
 error rate: .05
 observation probability: .9
-threshold: 0
+score threshold: 0
 selection strength: 1.
 reward matrix:
     benefit of cooperation: 5.

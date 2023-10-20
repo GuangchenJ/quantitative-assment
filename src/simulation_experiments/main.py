@@ -7,6 +7,7 @@
 # @Software: PyCharm
 
 import argparse
+import json
 import random
 import time
 import tqdm
@@ -20,9 +21,10 @@ import scipy.linalg
 from distutils.util import strtobool
 from functools import reduce
 
-from com_p_matrix import all_com_p_matrix
+from com_p_matrix import all_com_p_matrix, cooperates_homogeneous
 from stationary_dist_and_matrix import get_stationary_dist_and_matrix
 
+sys.path.append(r".")
 sys.path.append(r"../..")
 
 
@@ -41,14 +43,10 @@ def parse_args():
     parser.add_argument("--config_path", type=str, default="../../config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
                              "default is '../../config.yaml'.")
+    parser.add_argument("--save_data_path", type=str, default="./data.json",
+                        help="the path of the a json file for save data, default is './data.json'.")
 
     # Algorithm specific arguments
-    # parser.add_argument("--expt_id", type=str, default="RPDG",
-    #                     help="the id of the simulation experiments,including repeated prisoner's dilemma game (RPDG) "
-    #                          "experiment, repeated public goods game (RPGG) experiment, stochastic prisoner's dilemma "
-    #                          "game (SPDG) experiment.")
-    # parser.add_argument("--total_rounds", type=int, default=10e6,
-    #                     help="total timesteps of the experiments")
     parser.add_argument("--leading8idx", type=int, default=0,
                         help="(the index of leading eight norm)-1, e.g. use 0 for L1.")
     args = parser.parse_args()
@@ -83,8 +81,10 @@ if __name__ == '__main__':
     simu_start_time = time.time()
     logger.info("Simulation start!")
 
-    pbar = tqdm.tqdm(total=2 * yaml_args["judgment threshold"] * (yaml_args["population size"] - 1))
+    pbar = tqdm.tqdm(total=2 * yaml_args["judgment threshold"] * yaml_args["population size"])
     pbar.set_description('Processing')
+
+    res_list = list()
 
     for max_level in range(1, yaml_args["judgment threshold"] + 1):
         allc_com_p = all_com_p_matrix(1, -max_level, max_level, yaml_args, sys_args, logger, pbar)
@@ -92,8 +92,22 @@ if __name__ == '__main__':
         stationary_distribution_result, fixed_matrix = get_stationary_dist_and_matrix(
             allc_com_p, alld_com_p, yaml_args, sys_args, logger
         )
-        self_cooprate
+        self_cooperate = cooperates_homogeneous(-max_level, max_level, yaml_args, sys_args)
+        cooperate_total = stationary_distribution_result[0] * self_cooperate + stationary_distribution_result[1]
+        res_list.append({
+            "min_level": -max_level,
+            "max_level": max_level,
+            "stationary_distribution_result": stationary_distribution_result.tolist(),
+            "self_cooperate": self_cooperate,
+            "cooperate_total": cooperate_total,
+            "fixed_matrix": fixed_matrix
+        })
+        pbar.update(1)
 
     pbar.close()
+
+    with open(sys_args.save_data_path, 'w') as f:
+        json.dump(res_list, f)
+
     simu_end_time = time.time()
     logger.info(f"Simulation end! Time cost: {seconds2str(simu_start_time - simu_end_time)}")
