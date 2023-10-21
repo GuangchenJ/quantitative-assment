@@ -47,7 +47,7 @@ def parse_args():
     parser.add_argument("--config_path", type=str, default="./config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
                              "default is './config.yaml'.")
-    parser.add_argument("--save_data_path", type=str, default="./res",
+    parser.add_argument("--save_data_path", type=str, default="../../res",
                         help="the path directory of the a json file for save data, default is './res'.")
 
     # Algorithm specific arguments
