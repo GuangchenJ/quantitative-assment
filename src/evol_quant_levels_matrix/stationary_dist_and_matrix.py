@@ -3,7 +3,7 @@
 # @Time    : 2023/10/20 20:14 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/simulation_experiments/stationary_dist_and_matrix.py
+# @File    : src/evol_quant_levels_matrix/stationary_dist_and_matrix.py
 # @Software: PyCharm
 
 import argparse
@@ -60,12 +60,14 @@ def get_payoff(_idx: int,
     """
     calling correct payoff function
     """
-    matching_dict = lambda x: {
-        1 == _idx: payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p),
-        2 == _idx: payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p),
-        3 == _idx: payoff_allc_vs_alld(_s0_num, _pop_size, _b, _c),
-    }
-    return matching_dict(_idx)[True]
+    if 1 == _idx:
+        return payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p)
+    elif 2 == _idx:
+        return payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p)
+    elif 3 == _idx:
+        return payoff_allc_vs_alld(_s0_num, _pop_size, _b, _c)
+    else:
+        raise "Warning, wrong index!"
 
 
 def get_fixed_prob(_idx: int,

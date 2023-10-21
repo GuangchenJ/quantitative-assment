@@ -3,7 +3,7 @@
 # @Time    : 2023/10/17 15:04 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/simulation_experiments/main.py
+# @File    : src/evol_quant_levels_matrix/main.py
 # @Software: PyCharm
 
 import argparse
@@ -15,8 +15,6 @@ import sys
 import yaml
 
 import numpy as np
-
-import scipy.linalg
 
 from distutils.util import strtobool
 from functools import reduce
@@ -42,7 +40,7 @@ def parse_args():
                              "`$nproc`, and it must in [1, $nproc].")
     parser.add_argument("--config_path", type=str, default="../../config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
-                             "default is '../../config.yaml'.")
+                             "default is './config.yaml'.")
     parser.add_argument("--save_data_path", type=str, default="./data.json",
                         help="the path of the a json file for save data, default is './data.json'.")
 

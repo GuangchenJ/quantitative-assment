@@ -3,7 +3,7 @@
 # @Time    : 2023/10/20 20:02 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/simulation_experiments/com_p_matrix.py
+# @File    : src/evol_quant_levels_matrix/com_p_matrix.py
 # @Software: PyCharm
 
 import argparse
