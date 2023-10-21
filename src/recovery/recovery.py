@@ -3,7 +3,7 @@
 # @Time    : 2023/10/21 10:35 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/recovery/main.py
+# @File    : src/recovery/recovery.py
 # @Software: PyCharm
 
 """
@@ -15,6 +15,7 @@ containing steps to recovery and number of defections until recovery.
 import argparse
 import json
 import random
+import os
 import time
 import tqdm
 import sys
@@ -22,10 +23,10 @@ import yaml
 
 import numpy as np
 
-import scipy.linalg
-
 from distutils.util import strtobool
 from functools import reduce
+
+from dynamic_step import dynamic_simu
 
 sys.path.append(r".")
 sys.path.append(r"../..")
@@ -35,19 +36,19 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1,
                         help="seed of the experiment")
-    parser.add_argument("--log_level", type=str, default="INFO",
+    parser.add_argument("--log_level", type=str, default="DEBUG",
                         help="the logging level, include `CRITICAL`, `FATAL`, `ERROR`, `WARN`, `WARNING`, `INFO`, "
                              "`DEBUG`, `NOTSET`, default is `INFO`.")
-    parser.add_argument("--multiprocess", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--multiprocess", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
                         help="if toggled, multiprocess will be enabled by default")
     parser.add_argument("--process_num", type=int, default=0,
                         help="the number of processes used by the program, which defaults to `0`, is the same as "
                              "`$nproc`, and it must in [1, $nproc].")
-    parser.add_argument("--config_path", type=str, default="../../config.yaml",
+    parser.add_argument("--config_path", type=str, default="./config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
-                             "default is '../../config.yaml'.")
-    parser.add_argument("--save_data_path", type=str, default="./data.json",
-                        help="the path of the a json file for save data, default is './data.json'.")
+                             "default is './config.yaml'.")
+    parser.add_argument("--save_data_path", type=str, default="./res",
+                        help="the path directory of the a json file for save data, default is './res'.")
 
     # Algorithm specific arguments
     parser.add_argument("--leading8idx", type=int, default=0,
@@ -60,3 +61,45 @@ def parse_args():
 def seconds2str(t: float) -> str:
     return "%d:%02d:%02d.%03d" % \
         reduce(lambda ll, b: divmod(ll[0], b) + ll[1:], [(t * 1000,), 1000, 60, 60])
+
+
+if __name__ == '__main__':
+    MAX_LEVEL = 1
+    MIN_LEVEL = -MAX_LEVEL
+
+    sys_args = parse_args()
+
+    run_name = f"{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
+
+    # TRY NOT TO MODIFY: seeding
+    random.seed(sys_args.seed)
+    np.random.seed(sys_args.seed)
+
+    from src.my_utils import logger
+
+    logger = logger.get_logger(name="simulation.recovery", level=logger.matching_logger_level(sys_args.log_level))
+    logger.debug(f"run_name: {run_name}")
+
+    with open(sys_args.config_path, 'r') as f:
+        yaml_args = yaml.safe_load(f)
+    logger.debug(f"sys_args: {sys_args}")
+    logger.debug(f"yaml_args: {yaml_args}")
+
+    simu_start_time = time.time()
+    logger.info("Simulation start!")
+
+    pbar = tqdm.tqdm(total=int(yaml_args["total round"]))
+    pbar.set_description('Processing')
+
+    avg_step, avg_defect = dynamic_simu(MIN_LEVEL, MAX_LEVEL, yaml_args, sys_args, logger, pbar)
+
+    pbar.close()
+
+    if not os.path.exists(sys_args.save_data_path):
+        os.makedirs(sys_args.save_data_path)
+    with open(os.path.join(sys_args.save_data_path, f"{run_name}.json"), 'w') as f:
+        json.dump({"avg_step": avg_step, "avg_defect": avg_defect}, f)
+    logger.info(f"Result data saved to: {os.path.join(sys_args.save_data_path, f"{run_name}.json")}")
+
+    simu_end_time = time.time()
+    logger.info(f"Simulation end! Time cost: {seconds2str(simu_start_time - simu_end_time)}")

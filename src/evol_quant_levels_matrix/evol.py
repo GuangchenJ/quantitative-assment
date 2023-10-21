@@ -3,12 +3,13 @@
 # @Time    : 2023/10/17 15:04 CST
 # @Author  : Guangchen Jiang
 # @Email   : guangchen98.jiang@gmail.com
-# @File    : src/evol_quant_levels_matrix/main.py
+# @File    : src/evol_quant_levels_matrix/evol.py
 # @Software: PyCharm
 
 import argparse
 import json
 import random
+import os
 import time
 import tqdm
 import sys
@@ -38,11 +39,11 @@ def parse_args():
     parser.add_argument("--process_num", type=int, default=0,
                         help="the number of processes used by the program, which defaults to `0`, is the same as "
                              "`$nproc`, and it must in [1, $nproc].")
-    parser.add_argument("--config_path", type=str, default="../../config.yaml",
+    parser.add_argument("--config_path", type=str, default="./config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
                              "default is './config.yaml'.")
-    parser.add_argument("--save_data_path", type=str, default="./data.json",
-                        help="the path of the a json file for save data, default is './data.json'.")
+    parser.add_argument("--save_data_path", type=str, default="./res",
+                        help="the path directory of the a json file for save data, default is './res'.")
 
     # Algorithm specific arguments
     parser.add_argument("--leading8idx", type=int, default=0,
@@ -60,7 +61,7 @@ def seconds2str(t: float) -> str:
 if __name__ == '__main__':
     sys_args = parse_args()
 
-    run_name = f"{sys_args.seed}__{int(time.time())}"
+    run_name = f"{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
 
     # TRY NOT TO MODIFY: seeding
     random.seed(sys_args.seed)
@@ -104,8 +105,11 @@ if __name__ == '__main__':
 
     pbar.close()
 
-    with open(sys_args.save_data_path, 'w') as f:
+    if not os.path.exists(sys_args.save_data_path):
+        os.makedirs(sys_args.save_data_path)
+    with open(os.path.join(sys_args.save_data_path, f"{run_name}.json"), 'w') as f:
         json.dump(res_list, f)
+    logger.info(f"Result data saved to: {os.path.join(sys_args.save_data_path, f"{run_name}.json")}")
 
     simu_end_time = time.time()
     logger.info(f"Simulation end! Time cost: {seconds2str(simu_start_time - simu_end_time)}")

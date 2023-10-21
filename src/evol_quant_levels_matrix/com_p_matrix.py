@@ -234,7 +234,7 @@ def all_com_p_matrix(_idx: int,
 
         for _k in range(1, _args["population size"], p_step):
             p_list = list()
-            chunk = range(coop_com_p.shape[0])[_k:_k + p_step]
+            chunk = range(_args["population size"] - 1)[_k:_k + p_step]
             for _precess_i in chunk:
                 p_list.append(Process(target=mp_cooperates, args=(
                     _k, _idx, _min_level, _max_level, _args, _sys_args, shm.name, coop_com_p.shape, coop_com_p.dtype
@@ -243,7 +243,7 @@ def all_com_p_matrix(_idx: int,
                 _p.start()
             for _p in p_list:
                 _p.join()
-            pbar.update(p_step)
+            pbar.update(len(p_list))
 
         # update shared memory
         coop_com_p[:] = np.copy(shm_coop_com_p)
