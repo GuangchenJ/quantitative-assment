@@ -95,7 +95,7 @@ def get_fixed_prob(_idx: int,
             _args["reward matrix"]["cost of cooperation"],
             _all_com_p
         )
-        invade *= np.exp(-np.float64(_args["selection strength"]) * (pi_m_invade - pi_r_invade[0]))
+        invade *= np.exp(-np.float64(_args["selection strength"]) * (pi_r_invade - pi_m_invade))
         sum_q_invade += invade
     xf = 1. / (1 + sum_q)
     xf_invade = 1. / (1 + sum_q_invade)
