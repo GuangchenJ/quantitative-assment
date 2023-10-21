@@ -1,3 +1,8 @@
+# project specify ignore files or directories
+res/
+src/evol_quant_levels_matrix/res/
+src/recovery/res/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -5,9 +10,6 @@ __pycache__/
 
 # C extensions
 *.so
-
-# Run results
-res/
 
 # Distribution / packaging
 .Python
