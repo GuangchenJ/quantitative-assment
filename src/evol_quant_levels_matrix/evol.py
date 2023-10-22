@@ -99,7 +99,7 @@ if __name__ == '__main__':
             "stationary_distribution_result": stationary_distribution_result.tolist(),
             "self_cooperate": self_cooperate,
             "cooperate_total": cooperate_total,
-            "fixed_matrix": fixed_matrix
+            "fixed_matrix": fixed_matrix.tolist()
         })
         pbar.update(1)
 
