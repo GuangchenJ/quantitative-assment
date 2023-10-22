@@ -15,17 +15,16 @@ def matching_logger_level(level: str) -> int:
     assert level.upper() in _info_name_list, ("Logger's level should be set to one of the following "
                                               "values: 'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', "
                                               "'INFO', 'DEBUG', 'NOTSET'.")
-    matching_dict = lambda x: {
-        "NOTSET" == level.upper(): logging.NOTSET,
-        "DEBUG" == level.upper(): logging.DEBUG,
-        "INFO" == level.upper(): logging.INFO,
-        "WARN" == level.upper(): logging.WARN,
-        "WARNING" == level.upper(): logging.WARNING,
-        "ERROR" == level.upper(): logging.ERROR,
-        "FATAL" == level.upper(): logging.FATAL,
-        "CRITICAL" == level.upper(): logging.CRITICAL,
+    str2loglevel = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARN": logging.WARN,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "FATAL": logging.FATAL,
+        "CRITICAL": logging.CRITICAL,
     }
-    return matching_dict(level)[True]
+    return str2loglevel.get(level.upper(), logging.INFO)
 
 
 if __name__ == '__main__':
