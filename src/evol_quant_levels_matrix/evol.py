@@ -29,12 +29,12 @@ sys.path.append(r"../..")
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", type=int, default=1,
+    parser.add_argument("--seed", type=int, default=0,
                         help="seed of the experiment")
     parser.add_argument("--log_level", type=str, default="INFO",
                         help="the logging level, include `CRITICAL`, `FATAL`, `ERROR`, `WARN`, `WARNING`, `INFO`, "
                              "`DEBUG`, `NOTSET`, default is `INFO`.")
-    parser.add_argument("--multiprocess", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--multiprocess", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
                         help="if toggled, multiprocess will be enabled by default")
     parser.add_argument("--process_num", type=int, default=0,
                         help="the number of processes used by the program, which defaults to `0`, is the same as "
@@ -61,7 +61,7 @@ def seconds2str(t: float) -> str:
 if __name__ == '__main__':
     sys_args = parse_args()
 
-    run_name = f"{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
+    run_name = f"evol__{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
 
     # TRY NOT TO MODIFY: seeding
     random.seed(sys_args.seed)
@@ -88,6 +88,7 @@ if __name__ == '__main__':
     for max_level in range(1, yaml_args["judgment threshold"] + 1):
         allc_com_p = all_com_p_matrix(1, -max_level, max_level, yaml_args, sys_args, logger, pbar)
         alld_com_p = all_com_p_matrix(0, -max_level, max_level, yaml_args, sys_args, logger, pbar)
+
         stationary_distribution_result, fixed_matrix = get_stationary_dist_and_matrix(
             allc_com_p, alld_com_p, yaml_args, sys_args, logger
         )
@@ -111,5 +112,4 @@ if __name__ == '__main__':
         json.dump(res_list, f)
     logger.info(f"Result data saved to: {os.path.join(sys_args.save_data_path, f"{run_name}.json")}")
 
-    simu_end_time = time.time()
-    logger.info(f"Simulation end! Time cost: {seconds2str(simu_start_time - simu_end_time)}")
+    logger.info(f"Simulation end! Time cost: {seconds2str(time.time() - simu_start_time)}")

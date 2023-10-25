@@ -16,10 +16,10 @@ import numpy as np
 from multiprocessing import cpu_count, shared_memory
 from multiprocessing import Process
 
-g0 = np.int32(0)
-g1 = np.int32(1)
-a0 = np.int32(0)
-a1 = np.int32(1)
+g0 = 0
+g1 = 1
+a0 = 0
+a1 = 1
 # ref: Ohtsuki, Hisashi, and Yoh Iwasa. "How should we define goodness?—reputation dynamics in indirect reciprocity."
 # Journal of theoretical biology 231.1 (2004): 107-120.
 # dc11, dc10, dc01, dc00, dd11, dd10, dd01, dd00
@@ -32,7 +32,7 @@ L8ASSESSMENTS = np.array([
     [g1, g0, g1, g0, g0, g1, g0, g1],
     [g1, g1, g1, g0, g0, g1, g0, g0],
     [g1, g0, g1, g0, g0, g1, g0, g0]
-], dtype=np.int32)
+]).astype(int)
 # p11, p10, p01, p00
 L8ACTIONS = np.array([
     [a1, a0, a1, a1],
@@ -43,18 +43,11 @@ L8ACTIONS = np.array([
     [a1, a0, a1, a0],
     [a1, a0, a1, a0],
     [a1, a0, a1, a0]
-], dtype=np.int32)
+]).astype(int)
 
 
-def score2rep(_score: int, _threshold: int) -> np.int32:
-    return np.int32(1) if _score >= _threshold else np.int32(0)
-
-
-def score_add(_number: int, _sign: int, _min_level: int, _max_level: int) -> np.int32:
-    """
-    outputting new reputation score after an assessment
-    """
-    return np.clip(_number + _sign, _min_level, _max_level)
+def score2rep(_score: int, _threshold: int) -> int:
+    return 1 if _score >= _threshold else 0
 
 
 def is_all_good(_matrix: np.ndarray) -> bool:
@@ -74,20 +67,20 @@ def dynamic_step(_min_level: int,
                  _args: dict,
                  _sys_args: argparse.Namespace) -> tuple[np.float64, np.float64]:
     # image matrix
-    image_matrix = np.zeros((_args["population size"], _args["population size"]), dtype=np.int32)
-    image_matrix[0][1] = np.int32(-1)
+    image_matrix = np.zeros((_args["population size"], _args["population size"])).astype(int)
+    image_matrix[0][1] = -1
     steps = np.float64(0)
     defections = np.float64(0)
 
     while not is_all_good(image_matrix) and steps < 1000:
-        donor, receiver = np.array(random.sample(range(0, _args["population size"] - 1), 2), np.int32)
+        donor, receiver = random.sample(range(_args["population size"]), 2)
         donor_act = _actions[_strategies_array[donor]]
         reputation_donor_score = image_matrix[donor][donor]
         reputation_receiver_score = image_matrix[donor][receiver]
         reputation_donor = score2rep(reputation_donor_score, _args["score threshold"])
         reputation_receiver = score2rep(reputation_receiver_score, _args["score threshold"])
-        action = donor_act[(np.int32(1) - reputation_donor) * np.int32(2) + (np.int32(1) - reputation_receiver)]
-        for _j in np.arange(_args["population size"], dtype=np.int32):
+        action = donor_act[(1 - reputation_donor) * 2 + (1 - reputation_receiver)]
+        for _j in range(_args["population size"]):
             if (_j == donor) or (_j == receiver) or (random.random() < _args["observation probability"]):
                 obs_assessment = _assessments[_strategies_array[_j]]
                 rep_donor_obs = score2rep(image_matrix[_j][donor], _args["score threshold"])
@@ -142,11 +135,11 @@ def dynamic_simu(_min_level: int,
                  _sys_args: argparse.Namespace,
                  _logger: logging.Logger,
                  pbar: tqdm.tqdm = None):
-    assessments = np.array([np.zeros(8), np.ones(8), L8ASSESSMENTS[_sys_args.leading8idx]]).astype(np.int32)
-    actions = np.array([np.zeros(4), np.ones(4), L8ACTIONS[_sys_args.leading8idx]]).astype(np.int32)
+    assessments = np.array([np.zeros(8), np.ones(8), L8ASSESSMENTS[_sys_args.leading8idx]]).astype(int)
+    actions = np.array([np.zeros(4), np.ones(4), L8ACTIONS[_sys_args.leading8idx]]).astype(int)
     strategies_array = np.concatenate(
-        (np.zeros(0), np.ones(0), np.ones(_args["population size"]) * np.int32(2))
-    ).astype(np.int32)
+        (np.zeros(0), np.ones(0), np.ones(_args["population size"]) * 2)
+    ).astype(int)
     step_ctr = np.zeros(_args["total round"], dtype=np.float64)
     defection_ctr = np.ones(_args["total round"], dtype=np.float64)
     avg_defect = np.average(defection_ctr)

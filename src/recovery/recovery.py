@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     sys_args = parse_args()
 
-    run_name = f"{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
+    run_name = f"recovery__{sys_args.leading8idx}__{sys_args.seed}__{int(time.time())}"
 
     # TRY NOT TO MODIFY: seeding
     random.seed(sys_args.seed)
@@ -101,5 +101,4 @@ if __name__ == '__main__':
         json.dump({"avg_step": avg_step, "avg_defect": avg_defect}, f)
     logger.info(f"Result data saved to: {os.path.join(sys_args.save_data_path, f"{run_name}.json")}")
 
-    simu_end_time = time.time()
-    logger.info(f"Simulation end! Time cost: {seconds2str(simu_start_time - simu_end_time)}")
+    logger.info(f"Simulation end! Time cost: {seconds2str(time.time() - simu_start_time)}")

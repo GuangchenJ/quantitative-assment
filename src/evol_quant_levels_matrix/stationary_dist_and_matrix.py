@@ -60,9 +60,7 @@ def get_payoff(_idx: int,
     """
     calling correct payoff function
     """
-    if 1 == _idx:
-        return payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p)
-    elif 2 == _idx:
+    if 1 == _idx or 2 == _idx:
         return payoff_leading8_vs_all(_s0_num, _pop_size, _b, _c, _all_com_p)
     elif 3 == _idx:
         return payoff_allc_vs_alld(_s0_num, _pop_size, _b, _c)
@@ -99,8 +97,8 @@ def get_fixed_prob(_idx: int,
         )
         invade *= np.exp(-np.float64(_args["selection strength"]) * (pi_r_invade - pi_m_invade))
         sum_q_invade += invade
-    xf = 1. / (1 + sum_q)
-    xf_invade = 1. / (1 + sum_q_invade)
+    xf = np.float64(1.) / (np.float64(1.) + sum_q)
+    xf_invade = np.float64(1.) / (np.float64(1.) + sum_q_invade)
     return xf, xf_invade
 
 
@@ -136,4 +134,4 @@ def get_stationary_dist_and_matrix(_allc_com_p: np.ndarray,
                 row_sum += fixed_prob_matrix[_i][_j]
         fixed_prob_matrix[_i][_i] = np.float64(1.) - row_sum
     mu = stationary_distribution(fixed_prob_matrix)
-    return mu, fixed_prob_matrix * 2
+    return mu, fixed_prob_matrix * np.float64(2.)
