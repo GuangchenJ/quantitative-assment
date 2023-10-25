@@ -80,7 +80,7 @@ if __name__ == '__main__':
     simu_start_time = time.time()
     logger.info("Simulation start!")
 
-    pbar = tqdm.tqdm(total=2 * yaml_args["judgment threshold"] * yaml_args["population size"])
+    pbar = tqdm.tqdm(total=yaml_args["judgment threshold"] * (2 * yaml_args["population size"] - 1))
     pbar.set_description('Processing')
 
     res_list = list()
