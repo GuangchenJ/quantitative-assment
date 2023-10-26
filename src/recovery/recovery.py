@@ -36,7 +36,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=1,
                         help="seed of the experiment")
-    parser.add_argument("--log_level", type=str, default="DEBUG",
+    parser.add_argument("--log_level", type=str, default="INFO",
                         help="the logging level, include `CRITICAL`, `FATAL`, `ERROR`, `WARN`, `WARNING`, `INFO`, "
                              "`DEBUG`, `NOTSET`, default is `INFO`.")
     parser.add_argument("--multiprocess", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
@@ -44,10 +44,10 @@ def parse_args():
     parser.add_argument("--process_num", type=int, default=0,
                         help="the number of processes used by the program, which defaults to `0`, is the same as "
                              "`$nproc`, and it must in [1, $nproc].")
-    parser.add_argument("--config_path", type=str, default="./config.yaml",
+    parser.add_argument("--config_path", type=str, default="./configs/recovery_config.yaml",
                         help="the path of the a yaml file for algorithm specific arguments, "
-                             "default is './config.yaml'.")
-    parser.add_argument("--save_data_path", type=str, default="../../res",
+                             "default is './configs/recovery_config.yaml'.")
+    parser.add_argument("--save_data_path", type=str, default="./res",
                         help="the path directory of the a json file for save data, default is './res'.")
 
     # Algorithm specific arguments
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     logger = logger.get_logger(name="simulation.recovery", level=logger.matching_logger_level(sys_args.log_level))
     logger.debug(f"run_name: {run_name}")
 
-    with open(sys_args.config_path, 'r') as f:
+    with open(os.path.abspath(os.path.join(__file__, "../../..", sys_args.config_path)), 'r') as f:
         yaml_args = yaml.safe_load(f)
     logger.debug(f"sys_args: {sys_args}")
     logger.debug(f"yaml_args: {yaml_args}")
@@ -95,10 +95,12 @@ if __name__ == '__main__':
 
     pbar.close()
 
-    if not os.path.exists(sys_args.save_data_path):
-        os.makedirs(sys_args.save_data_path)
-    with open(os.path.join(sys_args.save_data_path, f"{run_name}.json"), 'w') as f:
+    _save_data_path = os.path.abspath(os.path.join(__file__, "../../..", sys_args.save_data_path))
+
+    if not os.path.exists(_save_data_path):
+        os.makedirs(_save_data_path)
+    with open(os.path.join(_save_data_path, f'{run_name}.json'), 'w') as f:
         json.dump({"avg_step": avg_step, "avg_defect": avg_defect}, f)
-    logger.info(f"Result data saved to: {os.path.join(sys_args.save_data_path, f"{run_name}.json")}")
+    logger.info(f"Result data saved to: {os.path.join(_save_data_path, f'{run_name}.json')}")
 
     logger.info(f"Simulation end! Time cost: {seconds2str(time.time() - simu_start_time)}")
