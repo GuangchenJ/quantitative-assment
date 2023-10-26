@@ -59,20 +59,25 @@ def is_all_good(_matrix: np.ndarray) -> bool:
     return True
 
 
+def is_all_bad(_matrix: np.ndarray):
+    # Is Player1 thinks everyone except him is bad and all others think P1 is bad
+    return np.all(_matrix[1:, :1] == -1) and np.all(_matrix[:1, 1:] == -1)
+
+
 def dynamic_step(_min_level: int,
                  _max_level: int,
                  _actions: np.ndarray,
                  _strategies_array: np.ndarray,
                  _assessments: np.ndarray,
                  _args: dict,
-                 _sys_args: argparse.Namespace) -> tuple[np.float64, np.float64]:
+                 _sys_args: argparse.Namespace) -> tuple[float, float]:
     # image matrix
     image_matrix = np.zeros((_args["population size"], _args["population size"])).astype(int)
     image_matrix[0][1] = -1
-    steps = np.float64(0)
-    defections = np.float64(0)
+    steps = 0.
+    defections = 0.
 
-    while not is_all_good(image_matrix) and steps < 1000:
+    while not is_all_good(image_matrix) and not is_all_bad(image_matrix) and steps < 1000:
         donor, receiver = random.sample(range(_args["population size"]), 2)
         donor_act = _actions[_strategies_array[donor]]
         reputation_donor_score = image_matrix[donor][donor]
@@ -94,10 +99,13 @@ def dynamic_step(_min_level: int,
                     image_matrix[_j][donor] + 1 if obs_asmt else -1,
                     _min_level, _max_level
                 )
-        steps += np.float64(1)
-        defections = defections + np.float64(1) - action
+        steps += 1.
+        defections += 1. - float(action)
 
-    return steps, defections
+    if is_all_bad(image_matrix):
+        return -1, -1
+    else:
+        return steps, defections
 
 
 def mp_dynamic_step(_it: int,
@@ -140,9 +148,8 @@ def dynamic_simu(_min_level: int,
     strategies_array = np.concatenate(
         (np.zeros(0), np.ones(0), np.ones(_args["population size"]) * 2)
     ).astype(int)
-    step_ctr = np.zeros(_args["total round"], dtype=np.float64)
-    defection_ctr = np.ones(_args["total round"], dtype=np.float64)
-    avg_defect = np.average(defection_ctr)
+    step_ctr = np.zeros(_args["total round"]).astype(float)
+    defection_ctr = np.ones(_args["total round"]).astype(float)
     if _sys_args.multiprocess:
         shm_s = shared_memory.SharedMemory(create=True, size=step_ctr.nbytes)
         shm_d = shared_memory.SharedMemory(create=True, size=defection_ctr.nbytes)
@@ -191,4 +198,7 @@ def dynamic_simu(_min_level: int,
             )
             pbar.update(1)
 
-    return np.average(step_ctr), np.average(defection_ctr)
+    # conditioned on recovery being reached
+    step_ctr_new = np.delete(step_ctr, np.where(-1 == step_ctr))
+    defect_ctr_new = np.delete(defection_ctr, np.where(-1 == defection_ctr))
+    return np.average(step_ctr_new), np.average(defect_ctr_new)
