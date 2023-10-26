@@ -197,7 +197,7 @@ def mp_cooperates(_k: int,
 
     # update average pairwise cooperation rate of the four possible strategy combinations
     # for this population composition
-    coop_com_p[_k - 1] = cooperates(_k, _idx, _max_level, _min_level, _args, _sys_args)
+    coop_com_p[_k - 1] = cooperates(_k, _idx, _min_level, _max_level, _args, _sys_args)
     existing_shm.close()
     return None
 
