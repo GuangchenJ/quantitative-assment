@@ -92,7 +92,7 @@ if __name__ == '__main__':
         stationary_distribution_result, fixed_matrix = get_stationary_dist_and_matrix(
             allc_com_p, alld_com_p, yaml_args, sys_args, logger
         )
-        self_cooperate = cooperates_homogeneous(-max_level, max_level, yaml_args, sys_args)
+        self_cooperate = cooperates_homogeneous(-max_level, max_level, yaml_args, sys_args).item()
         cooperate_total = stationary_distribution_result[0] * self_cooperate + stationary_distribution_result[1]
         res_list.append({
             "min_level": -max_level,
