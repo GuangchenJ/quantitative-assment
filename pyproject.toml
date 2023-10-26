@@ -1,13 +1,19 @@
 [tool.poetry]
-name = "cure"
-version = "0.1.0"
-description = "The python version code of the paper `Evolution of cooperation through cumulative reciprocity`."
+name = "quantitative-assment"
+version = "0.2.0"
+description = "The python version code of the paper `Quantitative assessment can stabilize indirect reciprocity under imperfect information`."
 authors = ["GuangchenJ <guangchen98.jiang@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11,<3.12"
+pytz = "^2023.3.post1"
+tzlocal = "^5.2"
+numpy = "^1.26.1"
+tqdm = "^4.66.1"
+pyyaml = "^6.0.1"
+deeptime = "^0.4.4"
 
 
 [build-system]
